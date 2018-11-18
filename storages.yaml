@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  Contains EFS and s3 bucket
+
+Parameters:
+  EFSPerformanceThroughput:
+    Type: Number
+    Description: Throughput for EFS
+    Default: 1
+
+Resources:
+  EFS:
+    Type: "AWS::EFS::FileSystem"
+    Properties:
+      PerformanceMode: generalPurpose
+      ThroughputMode: provisioned
+      ProvisionedThroughputInMibps: !Ref EFSPerformanceThroughput
+
+  MountTargetEFS:
+    Type: "AWS::EFS::MountTarget"
+    Properties:
+      FileSystemId: !Ref EFS
+      SecurityGroups:
+        - !ImportValue EfsMountTargetSG
+      SubnetId: !ImportValue VpcASubnetA
+
+  S3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: Private
+      BucketName: "infrastructure-storages-useast1-s3bucket"
+
+Outputs:
+  OutEFS:
+    Description: ID of EFS
+    Value: !Ref EFS
+    Export:
+      Name: "EFS"
+
+  OutS3Bucket:
+    Description: s3 bucket for big data
+    Value: !Ref S3Bucket
+    Export:
+      Name: "BigDataS3Bucket"
